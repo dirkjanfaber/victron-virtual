@@ -1,0 +1,23 @@
+{
+  "name": "victron-virtual",
+  "version": "0.0.1",
+  "description": "Create virtual Victron devices",
+  "scripts": {
+        "test": "standard --fix src/ scripts/"
+  },
+  "keywords": [
+    "victron",
+    "virtual"
+  ],
+  "node-red": {
+      "nodes": {
+          "victron-virtual": "./src/nodes/victron-virtual.js"
+      },
+      "version": ">=3.0.2"
+  },
+  "author": "Dirk-Jan Faber",
+  "license": "MIT",
+  "dependencies": {
+    "dbus-victron-virtual": "^0.1.0"
+  }
+}

@@ -1,0 +1,47 @@
+<script type="text/javascript">
+
+    RED.nodes.registerType('Virtual Device',{
+        category: 'Victron Energy',
+        color: '#f7ab3e',
+        defaults: {
+            name: {value:""},
+            device: {value:"", required: true},
+            deviceinstance: {value: 100, required: true, validate: function(value) {
+                return !isNaN(value) && value >= 0 && value <= 255
+            }}
+        },
+        icon: "victronenergy.svg",
+        inputs:0,
+        outputs:0,
+        label: function() {
+            return (this.name||"Virtual "+this.device)
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="Virtual Device">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-device"><i class="fa fa-industry"></i> Device</label>
+        <select id="node-input-device" required>
+            <option value="battery">Battery</option>
+            <option value="digitalinput">Digital input</option>
+            <option value="genset">Generator</option>
+            <option value="grid">Grid meter</option>
+            <option value="heatpump">Heatpump</option>
+            <option value="meteo">Meteo</option>
+            <option value="tank">Tank</option>
+            <option value="temperature">Temperature sensor</option>
+            <option value="relay">Relay</option>
+            <option value="pvinverter">PV inverter</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-deviceinstance"><i class="fa fa-tag"></i> Device Instance (0-255)</label>
+        <input type="text" id="node-input-deviceinstance" placeholder="Device Instance">
+    </div>
+</script>
+
