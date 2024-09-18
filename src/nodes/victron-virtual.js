@@ -36,7 +36,7 @@ const properties = {
     'Ac/L3/Power': {'d': 0},
     'Ac/L3/Voltage': {'d': 0},
     'Ac/Power': {'d': 0},
-    'NrOfPhases': {'i': 0},
+    'NrOfPhases': {'i': 3},
   },
   'heatpump': {
     'OperationMode': { 'i': 0},
@@ -66,6 +66,13 @@ const properties = {
     'Irradiance': {'d': 0},
     'Windspeed': {'d': 0},
     'ExternalTemperature': {'d': 0}
+  },
+  'tank': {
+    'ProductId': {'i': 0xa161 },
+    'Capacity': {'d': 90},
+    'Remaining': {'d': 90},
+    'FluidType': {'d': 90},
+    'Level': {'d': 90},
   },
   'temperature': {
     'ProductId': {'i': 0xc029 },

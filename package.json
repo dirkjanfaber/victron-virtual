@@ -1,6 +1,6 @@
 {
   "name": "victron-virtual",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Create virtual Victron devices",
   "scripts": {
         "test": "standard --fix src/ scripts/"
@@ -18,6 +18,7 @@
   "author": "Dirk-Jan Faber",
   "license": "MIT",
   "dependencies": {
-    "dbus-victron-virtual": "^0.1.0"
+    "dbus-native": "github:Chris927/dbus-native#3ff27f2",
+    "dbus-victron-virtual": "github:Chris927/dbus-victron-virtual#249dc11a15ab4ecaaa0d742d782bf5176438d2e7"
   }
 }
