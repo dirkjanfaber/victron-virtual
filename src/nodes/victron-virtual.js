@@ -64,7 +64,7 @@ function getIface(dev) {
   for (const key in properties[dev]) {
     result[key] = properties[dev][key]["value"] || 0
     delete(properties[dev][key]["value"])
-  }]
+  }
   return result;
 }
 
