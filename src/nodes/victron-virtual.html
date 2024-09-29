@@ -1,5 +1,14 @@
 <script type="text/javascript">
 
+    function checkSelectedVirtualDevice() {
+        [
+            'grid'
+        ].map( x => { $('#input-'+x).hide() })
+        const selected = $('select#node-input-device').val()
+        $('#input-'+selected).show()
+    }
+
+
     RED.nodes.registerType('Virtual Device',{
         category: 'Victron Energy',
         color: '#f7ab3e',
@@ -8,13 +17,18 @@
             device: {value:"", required: true},
             deviceinstance: {value: 100, required: true, validate: function(value) {
                 return !isNaN(value) && value >= 0 && value <= 255
-            }}
+            }},
+            // grid
+            grid_nrofphases: {value: 1, required: false}
         },
         icon: "victronenergy.svg",
         inputs:0,
         outputs:0,
         label: function() {
             return (this.name||"Virtual "+this.device)
+        },
+        oneditprepare: function oneditprepare() {
+            checkSelectedVirtualDevice()
         }
     });
 </script>
@@ -26,22 +40,61 @@
     </div>
     <div class="form-row">
         <label for="node-input-device"><i class="fa fa-industry"></i> Device</label>
-        <select id="node-input-device" required>
-            <option value="battery">Battery</option>
-            <option value="digitalinput">Digital input</option>
-            <option value="genset">Generator</option>
+        <select id="node-input-device" required onchange="checkSelectedVirtualDevice()">
             <option value="grid">Grid meter</option>
-            <option value="heatpump">Heatpump</option>
+            <!-- <option value="heatpump">Heatpump</option> -->
             <option value="meteo">Meteo</option>
-            <option value="tank">Tank</option>
             <option value="temperature">Temperature sensor</option>
-            <option value="relay">Relay</option>
-            <option value="pvinverter">PV inverter</option>
         </select>
     </div>
     <div class="form-row">
         <label for="node-input-deviceinstance"><i class="fa fa-tag"></i> Device Instance (0-255)</label>
         <input type="text" id="node-input-deviceinstance" placeholder="Device Instance">
     </div>
+    <div id="input-grid">
+        <div class="form-row">
+            <label for="node-input-grid_nrofphases"><i class="fa fa-location-arrow"></i> Nr of phases</label>
+            <select id="node-input-grid_nrofphases">
+                <option value="1">1</option>
+                <option value="3">3</option>
+            </select>
+            </div>
+        </div>
+    </div>
 </script>
 
+<script type="text/markdown" data-help-name="Virtual Device">
+
+
+The _Virtual Device_ node creates a virtual device on the underlying `dbus`, which allows for reading from and writing to the device as
+if it is an actually connected device. The virtual device will also show up in VRM, allowing you to plot data from less-supported hardware.
+
+Important note: Please be aware that using virtual devices on Victron systems may result in lower performance compared to using actual physical devices. Additionally, there is no official support provided when using virtual devices. These tools are intended for advanced users who understand and accept these limitations.
+
+## Adding a device
+
+To get started, pull a virtual device to the canvas and configure it. First the device type needs to be selected. At the moment the system supports:
+- Grid meter
+- Meteo
+- Temperature sensor
+
+Each device on the dbus needs to be uniquely identifed. This is done with a device identifcation, that must be unique for the type of device. Choosing a number between 100 and 200 should be a safe choise.
+
+Once the device has been deployed and the flow restarted, the device should appear on the dbus. Then you can use a custom output
+node to write values to the device. And of course use the regular nodes to read from the device.
+
+Below you can find some device specific tips and tricks.
+
+### Grid meter
+
+For the grid meter, you wil need to select the number of phases that are available on the device.
+
+### Meteo
+
+The meteo device only supports the irradiance and windspeed. Typically you would use it to send data from your weather stations
+to both a virtual meteo device and a virtual temperature sensor.
+
+### Temperature sensor
+
+Next to setting the temperature, the temperature sensor allows for setting humidity, pressure and battery voltage.
+</script>

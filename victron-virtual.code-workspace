@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../.node-red/node_modules/victron-virtual"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "../../.node-red"
+		}
+	],
+	"settings": {}
+}
