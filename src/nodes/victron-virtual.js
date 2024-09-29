@@ -1,86 +1,46 @@
 const { addVictronInterfaces } = require('dbus-victron-virtual')
 const dbus = require('dbus-native')
 
-const commonproperties = {
-  'Connected': {'i': 1 },
-  'ProductName': {'s': 'Virtual device'},
-  'Mgmt/Processname': { 's': 'Virtual NR device'},
-  'Mgmt/ProcsessVersion': { 's': '0.1'},
-  'Mgmt/Connection': {'s': 'Virtual'},
-  'Status': {'i': 0},
-  'CustomName': {'s': '-'},
-  'DeviceInstance': {'i': 0}
-}
-
 const properties = {
-  'digitalinput': {
-    'Count': { 'i': 0 }
+  'temperature': {
+    'DeviceInstance': { type: 'd' },
+    'ProductId': { type: 'i', value: 0xc029 },
+    'Temperature': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
+    'TemperatureType': {type: 'i', value: 2},
+    'Pressure': {type: 'd'},
+    'Humidity': {type: 'd'},
+    'BatteryVoltage': {type:'d'},
   },
-  'grid': {
-    'Ac/Energy/Forward': {'d': 0},
-    'Ac/Energy/Reverse': {'d': 0},
-    'Ac/Frequency': {'d': 0},
-    'Ac/L1/Current': {'d': 0},
-    'Ac/L1/Energy/Forward': {'d': 0},
-    'Ac/L1/Energy/Reverse': {'d': 0},
-    'Ac/L1/Power': {'d': 0},
-    'Ac/L1/Voltage': {'d': 0},
-    'Ac/L2/Current': {'d': 0},
-    'Ac/L2/Energy/Forward': {'d': 0},
-    'Ac/L2/Energy/Reverse': {'d': 0},
-    'Ac/L2/Power': {'d': 0},
-    'Ac/L2/Voltage': {'d': 0},
-    'Ac/L3/Current': {'d': 0},
-    'Ac/L3/Energy/Forward': {'d': 0},
-    'Ac/L3/Energy/Reverse': {'d': 0},
-    'Ac/L3/Power': {'d': 0},
-    'Ac/L3/Voltage': {'d': 0},
-    'Ac/Power': {'d': 0},
-    'NrOfPhases': {'i': 3},
+  'gridmeter': {
+
   },
   'heatpump': {
-    'OperationMode': { 'i': 0},
-    'Operation/Defrost': { 'i': 0},
-    'Operation/Thermostat': { 'i': 0}
-  },
-  'pvinverter': {
-    'Ac/Energy/Forward': {'d': 0},
-    'Ac/L1/Current': {'d': 0},
-    'Ac/L1/Energy/Forward': {'d': 0},
-    'Ac/L1/Power': {'d': 0},
-    'Ac/L1/Voltage': {'d': 0},
-    'Ac/L2/Current': {'d': 0},
-    'Ac/L2/Energy/Forward': {'d': 0},
-    'Ac/L2/Power': {'d': 0},
-    'Ac/L2/Voltage': {'d': 0},
-    'Ac/L3/Current': {'d': 0},
-    'Ac/L3/Energy/Forward': {'d': 0},
-    'Ac/L3/Power': {'d': 0},
-    'Ac/L3/Voltage': {'d': 0},
-    'ErrorCode': {'d': 0},
-    'FroniusDeviceType': {'d': 0},
-    'Position': {'d': 0},
-    'Serial': {'s': ''},
+     'DHWSetpoint': { type: 'd', format: (v) => v.toFixed(2) + 'C' },
+     'DeviceInstance': { type: 'd' },
+     'INVSecondaryCurrent': { type: 'd' },
+     'Operation/BUHStep1': { type: 'i' },
+     'Operation/CirculationPump': { type: 'i' },
+     'Operation/Defrost': { type: 'i' },
+     'Operation/PowerfullDHW': { type: 'i' },
+     'Operation/Reheat': { type: 'i' }, 
+     'Operation/SmartGridContact1': { type: 'i' },
+     'Operation/SmartGridContact2': { type: 'i' },
+     'Operation/Thermostat': { type: 'i' },
+     'Operation/WaterFlowSwitch': { type: 'i' },
+     'Operation/WaterPump': { type: 'i' },
+     'OperationMode': { type: 'i' },
+     'Temperature/DHWTank': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
+     'Temperature/IndoorAmbient': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
+     'Temperature/InletWater': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
+     'Temperature/LeavingWaterTempAfterBUH': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
+     'Temperature/LeavingWaterTempBeforeBUH': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
+     'Temperature/OutdoorHeatExchanger': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
   },
   'meteo': {
-    'Irradiance': {'d': 0},
-    'Windspeed': {'d': 0},
-    'ExternalTemperature': {'d': 0}
-  },
-  'tank': {
-    'ProductId': {'i': 0xa161 },
-    'Capacity': {'d': 90},
-    'Remaining': {'d': 90},
-    'FluidType': {'d': 90},
-    'Level': {'d': 90},
-  },
-  'temperature': {
-    'ProductId': {'i': 0xc029 },
-    'Temperature': {'d': 0},
-    'TemperatureType': {'i': 2},
-    'Pressure': {'d': 0},
-    'Humidity': {'d': 0},
-    'BatteryVoltage': {'d': 0},
+    'DeviceInstance': { type: 'd' },
+    'ExternalTemperature': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
+    'Irradiance': { type: 'd'},
+    'Windspeeed': { type: 'd'}
   }
 }
 
@@ -88,14 +48,9 @@ function getIfaceDesc(dev) {
   if (!properties[dev]) {
     return {};
   }
-
-  const result = {};
-  for (const key in properties[dev]) {
-    result[key] = Object.keys(properties[dev][key])[0];
-  }
-  for (const key in commonproperties) {
-    result[key] = Object.keys(commonproperties[key])[0];
-  }
+  let result = properties[dev];
+  // Make sure there is a DeviceInstance
+  properties[dev]["DeviceInstance"] = 'd'
 
   return result;
 }
@@ -105,22 +60,11 @@ function getIface(dev) {
     return { emit: function() {} };
   }
 
-  const result = { emit: function() {}};
+  let result = { emit: function() {}};
   for (const key in properties[dev]) {
-    if (properties[dev].hasOwnProperty(key)) {
-      const innerObj = properties[dev][key]
-      const innerKey = Object.keys(innerObj)[0]
-      result[key] = innerObj[innerKey]
-    }  
-  }
-  for (const key in commonproperties) {
-    if (commonproperties.hasOwnProperty(key)) {
-      const innerObj = commonproperties[key]
-      const innerKey = Object.keys(innerObj)[0]
-      result[key] = innerObj[innerKey]
-    }  
-  }
-
+    result[key] = properties[dev][key]["value"] || 0
+    delete(properties[dev][key]["value"])
+  }]
   return result;
 }
 
@@ -215,7 +159,7 @@ module.exports = function (RED) {
 
       // Set the DeviceInstance correctly
       iface['DeviceInstance'] = Number(config.deviceinstance) || 0
-      iface['CustomName'] = `Virtual ${config.device}` 
+      iface['CustomName'] = config.name || `Virtual ${config.device}` 
 
       // Now we need to actually export our interface on our object
       mybus.exportInterface(iface, objectPath, ifaceDesc);
