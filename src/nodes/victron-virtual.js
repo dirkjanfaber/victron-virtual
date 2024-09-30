@@ -2,70 +2,71 @@ const { addVictronInterfaces } = require('dbus-victron-virtual')
 const dbus = require('dbus-native')
 
 const properties = {
-  'temperature': {
-    'DeviceInstance': { type: 'd' },
-    'ProductId': { type: 'i', value: 0xc029 },
-    'Temperature': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
-    'TemperatureType': {type: 'i', value: 2},
-    'Pressure': {type: 'd'},
-    'Humidity': {type: 'd'},
-    'BatteryVoltage': {type:'d'},
+  temperature: {
+    DeviceInstance: { type: 'd' },
+    ProductId: { type: 'i', value: 0xc029 },
+    Temperature: { type: 'd', format: (v) => v.toFixed(2) + 'C' },
+    TemperatureType: { type: 'i', value: 2 },
+    Pressure: { type: 'd' },
+    Humidity: { type: 'd' },
+    BatteryVoltage: { type: 'd' }
   },
-  'gridmeter': {
+  gridmeter: {
 
   },
-  'heatpump': {
-     'DHWSetpoint': { type: 'd', format: (v) => v.toFixed(2) + 'C' },
-     'DeviceInstance': { type: 'd' },
-     'INVSecondaryCurrent': { type: 'd' },
-     'Operation/BUHStep1': { type: 'i' },
-     'Operation/CirculationPump': { type: 'i' },
-     'Operation/Defrost': { type: 'i' },
-     'Operation/PowerfullDHW': { type: 'i' },
-     'Operation/Reheat': { type: 'i' }, 
-     'Operation/SmartGridContact1': { type: 'i' },
-     'Operation/SmartGridContact2': { type: 'i' },
-     'Operation/Thermostat': { type: 'i' },
-     'Operation/WaterFlowSwitch': { type: 'i' },
-     'Operation/WaterPump': { type: 'i' },
-     'OperationMode': { type: 'i' },
-     'Temperature/DHWTank': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
-     'Temperature/IndoorAmbient': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
-     'Temperature/InletWater': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
-     'Temperature/LeavingWaterTempAfterBUH': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
-     'Temperature/LeavingWaterTempBeforeBUH': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
-     'Temperature/OutdoorHeatExchanger': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
+  heatpump: {
+    DHWSetpoint: { type: 'd', format: (v) => v.toFixed(2) + 'C' },
+    DeviceInstance: { type: 'd' },
+    INVSecondaryCurrent: { type: 'd' },
+    'Operation/BUHStep1': { type: 'i' },
+    'Operation/CirculationPump': { type: 'i' },
+    'Operation/Defrost': { type: 'i' },
+    'Operation/PowerfullDHW': { type: 'i' },
+    'Operation/Reheat': { type: 'i' },
+    'Operation/SmartGridContact1': { type: 'i' },
+    'Operation/SmartGridContact2': { type: 'i' },
+    'Operation/Thermostat': { type: 'i' },
+    'Operation/WaterFlowSwitch': { type: 'i' },
+    'Operation/WaterPump': { type: 'i' },
+    OperationMode: { type: 'i' },
+    'Temperature/DHWTank': { type: 'd', format: (v) => v.toFixed(2) + 'C' },
+    'Temperature/IndoorAmbient': { type: 'd', format: (v) => v.toFixed(2) + 'C' },
+    'Temperature/InletWater': { type: 'd', format: (v) => v.toFixed(2) + 'C' },
+    'Temperature/LeavingWaterTempAfterBUH': { type: 'd', format: (v) => v.toFixed(2) + 'C' },
+    'Temperature/LeavingWaterTempBeforeBUH': { type: 'd', format: (v) => v.toFixed(2) + 'C' },
+    'Temperature/OutdoorHeatExchanger': { type: 'd', format: (v) => v.toFixed(2) + 'C' }
   },
-  'meteo': {
-    'DeviceInstance': { type: 'd' },
-    'ExternalTemperature': {type: 'd', format: (v) => v.toFixed(2) + 'C'},
-    'Irradiance': { type: 'd'},
-    'Windspeeed': { type: 'd'}
+  meteo: {
+    DeviceInstance: { type: 'd' },
+    ExternalTemperature: { type: 'd', format: (v) => v.toFixed(2) + 'C' },
+    Irradiance: { type: 'd' },
+    Windspeeed: { type: 'd' }
   }
 }
 
-function getIfaceDesc(dev) {
+function getIfaceDesc (dev) {
   if (!properties[dev]) {
-    return {};
+    return {}
   }
-  let result = properties[dev];
-  // Make sure there is a DeviceInstance
-  properties[dev]["DeviceInstance"] = 'd'
+  const result = properties[dev]
+  properties[dev].DeviceInstance = 'd'
+  properties[dev].CustomName = 's'
+  properties[dev].Status = 'i'
 
-  return result;
+  return result
 }
 
-function getIface(dev) {
+function getIface (dev) {
   if (!properties[dev]) {
-    return { emit: function() {} };
+    return { emit: function () {} }
   }
 
-  let result = { emit: function() {}};
+  const result = { emit: function () {} }
   for (const key in properties[dev]) {
-    result[key] = properties[dev][key]["value"] || 0
-    delete(properties[dev][key]["value"])
+    result[key] = properties[dev][key].value || 0
+    delete (properties[dev][key].value)
   }
-  return result;
+  return result
 }
 
 module.exports = function (RED) {
@@ -80,7 +81,7 @@ module.exports = function (RED) {
     }
 
     node.warn('Starting up virtual device...')
-   
+
     // Connnect to the dbus
     if (this.address) {
       node.warn(`Connecting to TCP address ${this.address}.`)
@@ -113,8 +114,8 @@ module.exports = function (RED) {
       `Could not request service name ${serviceName}, the error was: ${err}.`
         )
         node.status({
-          color: "red",
-          shape: "dot",
+          color: 'red',
+          shape: 'dot',
           text: `${err}`
         })
         return
@@ -134,35 +135,34 @@ module.exports = function (RED) {
       `Failed to request service name "${serviceName} for ${config.device}". Check what return code "${retCode}" means.`
         )
         node.status({
-          color: "red",
-          shape: "dot",
+          color: 'red',
+          shape: 'dot',
           text: `Dbus errorcode ${retCode}`
         })
-        return
       }
     })
 
-    async function proceed(mybus, device) {
-
+    async function proceed (mybus, device) {
       // First, we need to create our interface description (here we will only expose method calls)
-      var ifaceDesc = {
+      const ifaceDesc = {
         name: interfaceName,
         methods: {
         },
         properties: getIfaceDesc(device),
         signals: {
         }
-      };
+      }
 
       // Then we need to create the interface implementation (with actual functions)
-      var iface = getIface(device);
+      const iface = getIface(device)
 
       // Set the DeviceInstance correctly
-      iface['DeviceInstance'] = Number(config.deviceinstance) || 0
-      iface['CustomName'] = config.name || `Virtual ${config.device}` 
+      iface.DeviceInstance = Number(config.deviceinstance) || 0
+      iface.CustomName = config.name || `Virtual ${config.device}`
+      iface.Status = 0
 
       // Now we need to actually export our interface on our object
-      mybus.exportInterface(iface, objectPath, ifaceDesc);
+      mybus.exportInterface(iface, objectPath, ifaceDesc)
 
       // Then we can add the required Victron interfaces, and receive some funtions to use
       const {
@@ -173,29 +173,28 @@ module.exports = function (RED) {
         removeSystem,
         getValue,
         setValue
-      } = addVictronInterfaces(mybus, ifaceDesc, iface);
+      } = addVictronInterfaces(mybus, ifaceDesc, iface)
 
       if (config.device === 'relay') {
         const settingsResult = await addSettings([
           { path: '/Settings/Relay/2/InitialState', default: 0, min: 0, max: 1 },
           { path: '/Settings/Relay/2/Function', default: 0, min: 0, max: 3 },
-          { path: '/Settings/Relay/2/Polarity', default: 0, min: 0, max: 1 },
-        ]);  
+          { path: '/Settings/Relay/2/Polarity', default: 0, min: 0, max: 1 }
+        ])
       }
 
       node.status({
-        "fill": "green",
-        "shape": "dot",
-        "text": `Virtual ${config.device} (${config.deviceinstance})`
+        fill: 'green',
+        shape: 'dot',
+        text: `Virtual ${config.device} (${config.deviceinstance})`
       })
-        
     }
 
     node.on('input', function (msg) {
     })
 
     node.on('close', function (done) {
-      node.warn("Remove service")
+      node.warn('Remove service')
       done()
     })
   }
