@@ -18,17 +18,17 @@ const properties = {
     DHWSetpoint: { type: 'd', format: (v) => v.toFixed(2) + 'C' },
     DeviceInstance: { type: 'd' },
     INVSecondaryCurrent: { type: 'd' },
-    'Operation/BUHStep1': { type: 'i' },
-    'Operation/CirculationPump': { type: 'i' },
-    'Operation/Defrost': { type: 'i' },
-    'Operation/PowerfullDHW': { type: 'i' },
-    'Operation/Reheat': { type: 'i' },
-    'Operation/SmartGridContact1': { type: 'i' },
-    'Operation/SmartGridContact2': { type: 'i' },
-    'Operation/Thermostat': { type: 'i' },
-    'Operation/WaterFlowSwitch': { type: 'i' },
-    'Operation/WaterPump': { type: 'i' },
-    OperationMode: { type: 'i' },
+    'Operation/BUHStep1': { type: 's' },
+    'Operation/CirculationPump': { type: 's' },
+    'Operation/Defrost': { type: 's' },
+    'Operation/PowerfullDHW': { type: 's' },
+    'Operation/Reheat': { type: 's' },
+    'Operation/SmartGridContact1': { type: 's' },
+    'Operation/SmartGridContact2': { type: 's' },
+    'Operation/Thermostat': { type: 's' },
+    'Operation/WaterFlowSwitch': { type: 's' },
+    'Operation/WaterPump': { type: 's' },
+    OperationMode: { type: 's' },
     'Temperature/DHWTank': { type: 'd', format: (v) => v.toFixed(2) + 'C' },
     'Temperature/IndoorAmbient': { type: 'd', format: (v) => v.toFixed(2) + 'C' },
     'Temperature/InletWater': { type: 'd', format: (v) => v.toFixed(2) + 'C' },
@@ -62,10 +62,26 @@ function getIface (dev) {
   }
 
   const result = { emit: function () {} }
-  for (const key in properties[dev]) {
-    result[key] = properties[dev][key].value || 0
-    delete (properties[dev][key].value)
+  for (let key in properties[dev]) {
+    if (properties[dev][key].value) {
+      result[key] = properties[dev][key].value
+      delete (properties[dev][key].value)  
+    } else {
+      switch (properties[dev][key].type) {
+        case 's': result[key] = '-'; break;
+        default: result[key] = 0
+      }
+    }
   }
+
+  // const result = { emit: function () {} }
+  // for (const key in properties[dev]) {
+    
+  //   if (typeof properties[dev][key] === 'object' && properties[dev][key] !== null) {
+  //     result[key] = properties[dev][key].value
+  //     delete (properties[dev][key].value)
+  //   }
+  // }
   return result
 }
 

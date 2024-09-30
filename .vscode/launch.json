@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Node-RED debugging virtual devices",
+            "runtimeExecutable": "node",
+            "runtimeArgs": ["--preserve-symlinks", "--experimental-modules"],
+            "env": {
+                // "NODE_RED_DBUS_ADDRESS": "venus.local:78",
+                "NODE_RED_DBUS_ADDRESS": "192.168.1.72:78",
+                // "DBUS_SESSION_BUS_ADDRESS": "unix:socket=/var/run/dbus/system_bus_socket"
+                "DEBUG": "dbus-victron-virtual"
+            },
+            "program": "/usr/local/lib/node_modules/node-red/red.js"
+        }
+    ]
+}
