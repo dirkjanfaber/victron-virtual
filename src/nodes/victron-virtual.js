@@ -11,8 +11,9 @@ const properties = {
     Humidity: { type: 'd' },
     BatteryVoltage: { type: 'd' }
   },
-  gridmeter: {
-
+  grid: {
+    'Ac/Energy/Forward': { type: 'd', format: (v) => v.toFixed(2) + 'kWh' },
+    'Ac/Energy/Reverse': { type: 'd', format: (v) => v.toFixed(2) + 'kWh' }
   },
   heatpump: {
     DHWSetpoint: { type: 'd', format: (v) => v.toFixed(2) + 'C' },
@@ -62,13 +63,13 @@ function getIface (dev) {
   }
 
   const result = { emit: function () {} }
-  for (let key in properties[dev]) {
+  for (const key in properties[dev]) {
     if (properties[dev][key].value) {
       result[key] = properties[dev][key].value
-      delete (properties[dev][key].value)  
+      delete (properties[dev][key].value)
     } else {
       switch (properties[dev][key].type) {
-        case 's': result[key] = '-'; break;
+        case 's': result[key] = '-'; break
         default: result[key] = 0
       }
     }
@@ -76,7 +77,7 @@ function getIface (dev) {
 
   // const result = { emit: function () {} }
   // for (const key in properties[dev]) {
-    
+
   //   if (typeof properties[dev][key] === 'object' && properties[dev][key] !== null) {
   //     result[key] = properties[dev][key].value
   //     delete (properties[dev][key].value)
