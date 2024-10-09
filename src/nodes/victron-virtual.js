@@ -211,7 +211,7 @@ module.exports = function (RED) {
     })
 
     node.on('close', function (done) {
-      node.warn('Remove service')
+      this.bus.connection.end()
       done()
     })
   }
