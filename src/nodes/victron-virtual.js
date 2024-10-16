@@ -3,7 +3,6 @@ const dbus = require('dbus-native-victron')
 
 const properties = {
   temperature: {
-    DeviceInstance: { type: 'd' },
     Temperature: { type: 'd', format: (v) => v != null ? v.toFixed(1)+'C' : '' },
     TemperatureType: { type: 'i', value: 2, min: 0, max: 2 },
     Pressure: { type: 'd', format: (v) => v != null ? v : '' },
@@ -24,7 +23,6 @@ const properties = {
   },
   heatpump: {
     DHWSetpoint: { type: 'd', format: (v) => v != null ? v.toFixed(1)+'C' : '' },
-    DeviceInstance: { type: 'd' },
     INVSecondaryCurrent: { type: 'd' },
     'Operation/BUHStep1': { type: 's' },
     'Operation/CirculationPump': { type: 's' },
@@ -45,10 +43,47 @@ const properties = {
     'Temperature/OutdoorHeatExchanger': { type: 'd', format: (v) => v != null ? v.toFixed(1)+'C' : '' }
   },
   meteo: {
-    DeviceInstance: { type: 'd' },
-    ExternalTemperature: { type: 'd', format: (v) => v != null ? v.toFixed(1)+'C' : '' },
-    Irradiance: { type: 'd' },
-    Windspeeed: { type: 'd' }
+    Irradiance: { type: 'd', format: (v) => v != null ? v.toFixed(1)+'W/m2' : '' },
+    Windspeeed: { type: 'd', format: (v) => v != null ? v.toFixed(1)+'m/s' : '' }
+  },
+  tank: {
+      'Alarms/High/Active': { type: 'd' },
+      'Alarms/High/Delay': { type: 'd' },
+      'Alarms/High/Enable': { type: 'd' },
+      'Alarms/High/Restore': { type: 'd' },
+      'Alarms/High/State': { type: 'd' },
+      'Alarms/Low/Active': { type: 'd' },
+      'Alarms/Low/Delay': { type: 'd' },
+      'Alarms/Low/Enable': { type: 'd' },
+      'Alarms/Low/Restore': { type: 'd' },
+      'Alarms/Low/State': { type: 'd' },
+      Capacity: { type: 'd' },
+      FilterLength: { type: 'd' },
+      FluidType: {
+        type: 'i',
+        format: (v) => ({
+          0: 'Fuel',
+          1: 'Fresh water',
+          2: 'Waste water',
+          3: 'Live well',
+          4: 'Oil',
+          5: 'Black water (sewage)',
+          6: 'Gasoline',
+          7: 'Diesel',
+          8: 'LPG',
+          9: 'LNG',
+          10: 'Hydraulic oil',
+          11: 'Raw water'
+        }[v] || 'unknown'),
+        value: 0
+      },
+      Level: { type: 'd' },
+      RawUnit: { type: 's' },
+      RawValue: { type: 'd' },
+      RawValueEmpty: { type: 'd' },
+      RawValueFull: { type: 'd' },
+      Remaining: { type: 'd' },
+      Shape: { type: 's' }
   }
 }
 
@@ -57,7 +92,15 @@ function getIfaceDesc(dev) {
     return {};
   }
 
-  const result = JSON.parse(JSON.stringify(properties[dev]));
+  const result = {};
+
+  // Deep copy the properties, including format functions
+  for (const [key, value] of Object.entries(properties[dev])) {
+    result[key] = { ...value };
+    if (typeof value.format === 'function') {
+      result[key].format = value.format;
+    }
+  }
 
   result.DeviceInstance = { type: 'd' };
   result.CustomName = { type: 's' };
@@ -103,8 +146,6 @@ module.exports = function (RED) {
     if (address && address.length === 2) {
       this.address = `tcp:host=${address[0]},port=${address[1]}`
     }
-
-    node.warn('Starting up virtual device...')
 
     // Connnect to the dbus
     if (this.address) {

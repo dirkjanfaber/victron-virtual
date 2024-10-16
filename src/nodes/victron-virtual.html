@@ -1,11 +1,24 @@
+<style>
+  a.blue-link {
+    color: rgb(71, 144, 208) !important;
+  }
+  .form-warning, .form-info {
+        padding-bottom: 8px;
+        max-width: 450px;
+  }
+  .form-warning .fa {
+        color: #d6615f;
+  }
+</style>
+
 <script type="text/javascript">
 
     function checkSelectedVirtualDevice() {
         [
             'grid'
-        ].map( x => { $('#input-'+x).hide() })
+        ].map( x => { $('.input-'+x).hide() })
         const selected = $('select#node-input-device').val()
-        $('#input-'+selected).show()
+        $('.input-'+selected).show()
     }
 
 
@@ -45,13 +58,19 @@
             <!-- <option value="heatpump">Heatpump</option> -->
             <option value="meteo">Meteo</option>
             <option value="temperature">Temperature sensor</option>
+            <!-- <option value="tank">Tank sensor</option> -->
         </select>
+    </div>
+    <div class="input-grid">
+        <div class="form-tips" style="display: block;">
+            <p><strong>Note:</strong> Do not use this feature to make an ESS system with third party energy meters. There are multiple <a href="https://www.victronenergy.com/meters-and-sensors/energy-meter" class="blue-link">officially supported meters</a> that can be used in a Victron ESS system. Using other meters has proven too often to lead to issues related with stability.</p>
+        </div>
     </div>
     <div class="form-row">
         <label for="node-input-deviceinstance"><i class="fa fa-tag"></i> Device Instance (0-255)</label>
         <input type="text" id="node-input-deviceinstance" placeholder="Device Instance">
     </div>
-    <div id="input-grid">
+    <div class="input-grid">
         <div class="form-row">
             <label for="node-input-grid_nrofphases"><i class="fa fa-location-arrow"></i> Nr of phases</label>
             <select id="node-input-grid_nrofphases">
@@ -88,6 +107,8 @@ Below you can find some device specific tips and tricks.
 ### Grid meter
 
 For the grid meter, you wil need to select the number of phases that are available on the device.
+
+Do not use this feature to make an ESS system with third party energy meters. There are multiple [officially supported meters](https://www.victronenergy.com/meters-and-sensors/energy-meter) that can be used in a Victron ESS system. Using other meters has proven too often to lead to issues related with stability.
 
 ### Meteo
 

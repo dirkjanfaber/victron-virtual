@@ -25,6 +25,8 @@ Below you can find some device specific tips and tricks.
 
 For the grid meter, you wil need to select the number of phases that are available on the device.
 
+Do not use this feature to make an ESS system with third party energy meters. There are multiple [officially supported meters](https://www.victronenergy.com/meters-and-sensors/energy-meter) that can be used in a Victron ESS system. Using other meters has proven too often to lead to issues related with stability.
+
 ### Meteo
 
 The meteo device only supports the irradiance and windspeed. Typically you would use it to send data from your weather stations
