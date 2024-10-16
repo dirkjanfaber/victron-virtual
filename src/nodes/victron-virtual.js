@@ -4,10 +4,16 @@ const dbus = require('dbus-native-victron')
 const properties = {
   temperature: {
     Temperature: { type: 'd', format: (v) => v != null ? v.toFixed(1)+'C' : '' },
-    TemperatureType: { type: 'i', value: 2, min: 0, max: 2 },
-    Pressure: { type: 'd', format: (v) => v != null ? v : '' },
-    Humidity: { type: 'd', format: (v) => v != null ? v : '' },
-    BatteryVoltage: { type: 'd', value: 3.3 }
+    TemperatureType: { type: 'i', value: 2, min: 0, max: 2,
+      format: (v) => ({
+        0: 'Battery',
+        1: 'Fridge',
+        2: 'Generic',
+      }[v] || 'unknown')
+     },
+    Pressure: { type: 'd', format: (v) => v != null ? v.toFixed(0)+'hPa' : '' },
+    Humidity: { type: 'd', format: (v) => v != null ?  v.toFixed(1)+'%' : '' },
+    BatteryVoltage: { type: 'd', value: 3.3, format: (v) => v != null ?  v.toFixed(2)+'V' : ''  }
   },
   grid: {
     'Ac/Energy/Forward': { type: 'd', format: (v) => v.toFixed(2) + 'kWh', value: 0 },
