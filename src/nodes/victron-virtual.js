@@ -1,5 +1,5 @@
 const { addVictronInterfaces } = require('dbus-victron-virtual')
-const dbus = require('dbus-native')
+const dbus = require('dbus-native-victron')
 
 const properties = {
   temperature: {
