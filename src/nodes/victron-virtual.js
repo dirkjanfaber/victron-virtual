@@ -3,32 +3,36 @@ const dbus = require('dbus-native-victron')
 
 const properties = {
   temperature: {
-    Temperature: { type: 'd', format: (v) => v != null ? v.toFixed(1)+'C' : '' },
-    TemperatureType: { type: 'i', value: 2, min: 0, max: 2,
+    Temperature: { type: 'd', format: (v) => v != null ? v.toFixed(1) + 'C' : '' },
+    TemperatureType: {
+      type: 'i',
+      value: 2,
+      min: 0,
+      max: 2,
       format: (v) => ({
         0: 'Battery',
         1: 'Fridge',
-        2: 'Generic',
+        2: 'Generic'
       }[v] || 'unknown')
-     },
-    Pressure: { type: 'd', format: (v) => v != null ? v.toFixed(0)+'hPa' : '' },
-    Humidity: { type: 'd', format: (v) => v != null ?  v.toFixed(1)+'%' : '' },
-    BatteryVoltage: { type: 'd', value: 3.3, format: (v) => v != null ?  v.toFixed(2)+'V' : ''  }
+    },
+    Pressure: { type: 'd', format: (v) => v != null ? v.toFixed(0) + 'hPa' : '' },
+    Humidity: { type: 'd', format: (v) => v != null ? v.toFixed(1) + '%' : '' },
+    BatteryVoltage: { type: 'd', value: 3.3, format: (v) => v != null ? v.toFixed(2) + 'V' : '' }
   },
   grid: {
-    'Ac/Energy/Forward': { type: 'd', format: (v) => v.toFixed(2) + 'kWh', value: 0 },
-    'Ac/Energy/Reverse': { type: 'd', format: (v) => v.toFixed(2) + 'kWh', value: 0 },
-    'Ac/Frequency': { type: 'd', format: (v) => v.toFixed(2) + 'Hz' },
-    'Ac/N/Current': { type: 'd', format: (v) => v.toFixed(2) + 'A' },
-    'Ac/Power': { type: 'd', format: (v) => v.toFixed(2) + 'W' },
-    'Ac/PENVoltage': { type: 'd', format: (v) => v.toFixed(2) + 'V' },
-    'NrOfPhases': { type: 'd', format: (v) => v != null ? v : '', value: 1 },
-    'ErrorCode': { type: 'd', format: (v) => v != null ? v : '', value: 0 },
-    'Connected': { type: 'd', format: (v) => v != null ? v : '', value: 1 },
-    'Position': { type: 'd', format: (v) => v != null ? v : '', value: 0 }
+    'Ac/Energy/Forward': { type: 'd', format: (v) => v != null ? v.toFixed(2) + 'kWh' : '', value: 0 },
+    'Ac/Energy/Reverse': { type: 'd', format: (v) => v != null ? v.toFixed(2) + 'kWh' : '', value: 0 },
+    'Ac/Frequency': { type: 'd', format: (v) => v != null ? v.toFixed(2) + 'Hz' : '' },
+    'Ac/N/Current': { type: 'd', format: (v) => v != null ? v.toFixed(2) + 'A' : '' },
+    'Ac/Power': { type: 'd', format: (v) => v != null ? v.toFixed(2) + 'W' : '' },
+    'Ac/PENVoltage': { type: 'd', format: (v) => v != null ? v.toFixed(2) + 'V' : '' },
+    NrOfPhases: { type: 'd', format: (v) => v != null ? v : '', value: 1 },
+    ErrorCode: { type: 'd', format: (v) => v != null ? v : '', value: 0 },
+    Connected: { type: 'd', format: (v) => v != null ? v : '', value: 1 },
+    Position: { type: 'd', format: (v) => v != null ? v : '', value: 0 }
   },
   heatpump: {
-    DHWSetpoint: { type: 'd', format: (v) => v != null ? v.toFixed(1)+'C' : '' },
+    DHWSetpoint: { type: 'd', format: (v) => v != null ? v.toFixed(1) + 'C' : '' },
     INVSecondaryCurrent: { type: 'd' },
     'Operation/BUHStep1': { type: 's' },
     'Operation/CirculationPump': { type: 's' },
@@ -41,105 +45,105 @@ const properties = {
     'Operation/WaterFlowSwitch': { type: 's' },
     'Operation/WaterPump': { type: 's' },
     OperationMode: { type: 's' },
-    'Temperature/DHWTank': { type: 'd', format: (v) => v != null ? v.toFixed(1)+'C' : '' },
-    'Temperature/IndoorAmbient': { type: 'd', format: (v) => v != null ? v.toFixed(1)+'C' : '' },
-    'Temperature/InletWater': { type: 'd', format: (v) => v != null ? v.toFixed(1)+'C' : '' },
-    'Temperature/LeavingWaterTempAfterBUH': { type: 'd', format: (v) => v != null ? v.toFixed(1)+'C' : '' },
-    'Temperature/LeavingWaterTempBeforeBUH': { type: 'd', format: (v) => v != null ? v.toFixed(1)+'C' : '' },
-    'Temperature/OutdoorHeatExchanger': { type: 'd', format: (v) => v != null ? v.toFixed(1)+'C' : '' }
+    'Temperature/DHWTank': { type: 'd', format: (v) => v != null ? v.toFixed(1) + 'C' : '' },
+    'Temperature/IndoorAmbient': { type: 'd', format: (v) => v != null ? v.toFixed(1) + 'C' : '' },
+    'Temperature/InletWater': { type: 'd', format: (v) => v != null ? v.toFixed(1) + 'C' : '' },
+    'Temperature/LeavingWaterTempAfterBUH': { type: 'd', format: (v) => v != null ? v.toFixed(1) + 'C' : '' },
+    'Temperature/LeavingWaterTempBeforeBUH': { type: 'd', format: (v) => v != null ? v.toFixed(1) + 'C' : '' },
+    'Temperature/OutdoorHeatExchanger': { type: 'd', format: (v) => v != null ? v.toFixed(1) + 'C' : '' }
   },
   meteo: {
-    Irradiance: { type: 'd', format: (v) => v != null ? v.toFixed(1)+'W/m2' : '' },
-    Windspeeed: { type: 'd', format: (v) => v != null ? v.toFixed(1)+'m/s' : '' }
+    Irradiance: { type: 'd', format: (v) => v != null ? v.toFixed(1) + 'W/m2' : '' },
+    Windspeeed: { type: 'd', format: (v) => v != null ? v.toFixed(1) + 'm/s' : '' }
   },
   tank: {
-      'Alarms/High/Active': { type: 'd' },
-      'Alarms/High/Delay': { type: 'd' },
-      'Alarms/High/Enable': { type: 'd' },
-      'Alarms/High/Restore': { type: 'd' },
-      'Alarms/High/State': { type: 'd' },
-      'Alarms/Low/Active': { type: 'd' },
-      'Alarms/Low/Delay': { type: 'd' },
-      'Alarms/Low/Enable': { type: 'd' },
-      'Alarms/Low/Restore': { type: 'd' },
-      'Alarms/Low/State': { type: 'd' },
-      Capacity: { type: 'd' },
-      FilterLength: { type: 'd' },
-      FluidType: {
-        type: 'i',
-        format: (v) => ({
-          0: 'Fuel',
-          1: 'Fresh water',
-          2: 'Waste water',
-          3: 'Live well',
-          4: 'Oil',
-          5: 'Black water (sewage)',
-          6: 'Gasoline',
-          7: 'Diesel',
-          8: 'LPG',
-          9: 'LNG',
-          10: 'Hydraulic oil',
-          11: 'Raw water'
-        }[v] || 'unknown'),
-        value: 0
-      },
-      Level: { type: 'd' },
-      RawUnit: { type: 's' },
-      RawValue: { type: 'd' },
-      RawValueEmpty: { type: 'd' },
-      RawValueFull: { type: 'd' },
-      Remaining: { type: 'd' },
-      Shape: { type: 's' }
+    'Alarms/High/Active': { type: 'd' },
+    'Alarms/High/Delay': { type: 'd' },
+    'Alarms/High/Enable': { type: 'd' },
+    'Alarms/High/Restore': { type: 'd' },
+    'Alarms/High/State': { type: 'd' },
+    'Alarms/Low/Active': { type: 'd' },
+    'Alarms/Low/Delay': { type: 'd' },
+    'Alarms/Low/Enable': { type: 'd' },
+    'Alarms/Low/Restore': { type: 'd' },
+    'Alarms/Low/State': { type: 'd' },
+    Capacity: { type: 'd' },
+    FilterLength: { type: 'd' },
+    FluidType: {
+      type: 'i',
+      format: (v) => ({
+        0: 'Fuel',
+        1: 'Fresh water',
+        2: 'Waste water',
+        3: 'Live well',
+        4: 'Oil',
+        5: 'Black water (sewage)',
+        6: 'Gasoline',
+        7: 'Diesel',
+        8: 'LPG',
+        9: 'LNG',
+        10: 'Hydraulic oil',
+        11: 'Raw water'
+      }[v] || 'unknown'),
+      value: 0
+    },
+    Level: { type: 'd' },
+    RawUnit: { type: 's' },
+    RawValue: { type: 'd' },
+    RawValueEmpty: { type: 'd' },
+    RawValueFull: { type: 'd' },
+    Remaining: { type: 'd' },
+    Shape: { type: 's' }
   }
 }
 
-function getIfaceDesc(dev) {
+function getIfaceDesc (dev) {
   if (!properties[dev]) {
-    return {};
+    return {}
   }
 
-  const result = {};
+  const result = {}
 
   // Deep copy the properties, including format functions
   for (const [key, value] of Object.entries(properties[dev])) {
-    result[key] = { ...value };
+    result[key] = { ...value }
     if (typeof value.format === 'function') {
-      result[key].format = value.format;
+      result[key].format = value.format
     }
   }
 
-  result.DeviceInstance = { type: 'd' };
-  result.CustomName = { type: 's' };
-  result.Status = { type: 'i' };
+  result.DeviceInstance = { type: 'd' }
+  result.CustomName = { type: 's' }
+  result.Status = { type: 'i' }
+  result.Serial = { type: 's' }
 
-  return result;
+  return result
 }
 
-function getIface(dev) {
+function getIface (dev) {
   if (!properties[dev]) {
-    return { emit: function () {} };
+    return { emit: function () {} }
   }
 
-  const result = { emit: function () {} };
+  const result = { emit: function () {} }
 
   for (const key in properties[dev]) {
-
-    const propertyValue = JSON.parse(JSON.stringify(properties[dev][key]));
+    const propertyValue = JSON.parse(JSON.stringify(properties[dev][key]))
 
     if (propertyValue.value !== undefined) {
-      result[key] = propertyValue.value;
+      result[key] = propertyValue.value
     } else {
       switch (propertyValue.type) {
         case 's':
-          result[key] = '-';
-          break;
+          result[key] = '-'
+          break
         default:
-          result[key] = null;
+          result[key] = null
       }
     }
   }
 
-  return result;
+  return result
 }
 
 module.exports = function (RED) {
@@ -196,14 +200,13 @@ module.exports = function (RED) {
       // Return code 0x3 means it already exists (which should be fine)
       if (retCode === 1 || retCode === 3) {
         console.log(`Successfully requested service name "${serviceName}" (${retCode})`)
-        proceed(this.bus, config.device)
+        proceed(this.bus, config.device, this.id)
       } else {
         /* Other return codes means various errors, check here
-	(https://dbus.freedesktop.org/doc/api/html/group__DBusShared.html#ga37a9bc7c6eb11d212bf8d5e5ff3b50f9) for more
-	information
-	*/
+        (https://dbus.freedesktop.org/doc/api/html/group__DBusShared.html#ga37a9bc7c6eb11d212bf8d5e5ff3b50f9) for more
+        information */
         node.warn(
-      `Failed to request service name "${serviceName} for ${config.device}". Check what return code "${retCode}" means.`
+          `Failed to request service name "${serviceName} for ${config.device}". Check what return code "${retCode}" means.`
         )
         node.status({
           color: 'red',
@@ -213,7 +216,7 @@ module.exports = function (RED) {
       }
     })
 
-    async function proceed (mybus, device) {
+    async function proceed (mybus, device, id) {
       // First, we need to create our interface description (here we will only expose method calls)
       const ifaceDesc = {
         name: interfaceName,
@@ -231,9 +234,10 @@ module.exports = function (RED) {
       iface.DeviceInstance = Number(config.deviceinstance) || 0
       iface.CustomName = config.name || `Virtual ${config.device}`
       iface.Status = 0
+      iface.Serial = id || '-'
 
       // Device specific configuration
-      switch (config.device ) {
+      switch (config.device) {
         case 'grid': {
           iface.NrOfPhases = Number(config.grid_nrofphases) || 1
           const properties = [
@@ -242,20 +246,20 @@ module.exports = function (RED) {
             { name: 'Voltage', unit: 'V' },
             { name: 'Energy/Forward', unit: 'kWh' },
             { name: 'Energy/Reverse', unit: 'kWh' }
-          ];
+          ]
           for (let i = 1; i <= iface.NrOfPhases; i++) {
-            const phase = `L${i}`;
-              properties.forEach(({ name, unit }) => {
-              const key = `Ac/${phase}/${name}`;
+            const phase = `L${i}`
+            properties.forEach(({ name, unit }) => {
+              const key = `Ac/${phase}/${name}`
               ifaceDesc.properties[key] = {
                 type: 'd',
-                format: (v) => v.toFixed(2) + unit
-              };
-              iface[key] = 0;
-            });
+                format: (v) => v != null ? v.toFixed(2) + unit : ''
+              }
+              iface[key] = 0
+            })
           }
         }
-        break;
+          break
       }
 
       // Now we need to actually export our interface on our object
@@ -263,14 +267,16 @@ module.exports = function (RED) {
 
       // Then we can add the required Victron interfaces, and receive some funtions to use
       const {
-        emitItemsChanged,
-        addSettings,
-        removeSettings,
-        addSystem,
-        removeSystem,
-        getValue,
-        setValue
+        // emitItemsChanged,
+        addSettings
+        // removeSettings,
+        // addSystem
+        // removeSystem,
+        // getValue,
+        // setValue
       } = addVictronInterfaces(mybus, ifaceDesc, iface)
+
+      // TODO: Now we need to add the device to com.victronenergy.settings too
 
       // if (config.device === 'relay') {
       //   const settingsResult = await addSettings([

@@ -8,12 +8,14 @@
             "runtimeExecutable": "node",
             "runtimeArgs": ["--preserve-symlinks", "--experimental-modules"],
             "env": {
+                "NODE_RED_DBUS_ADDRESS": "10.230.1.101:78",
                 // "NODE_RED_DBUS_ADDRESS": "venus.local:78",
-                "NODE_RED_DBUS_ADDRESS": "192.168.1.72:78",
+                // "NODE_RED_DBUS_ADDRESS": "192.168.1.72:78",
                 // "DBUS_SESSION_BUS_ADDRESS": "unix:socket=/var/run/dbus/system_bus_socket"
                 "DEBUG": "dbus-victron-virtual"
             },
-            "program": "/usr/local/lib/node_modules/node-red/red.js"
+            // "program": "/usr/local/lib/node_modules/node-red/red.js"
+            "program": "/home/dirk-jan/.nvm/versions/node/v18.20.4/lib/node_modules/node-red/red.js"
         }
     ]
 }
