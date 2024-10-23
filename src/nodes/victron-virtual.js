@@ -1,5 +1,6 @@
 const { addVictronInterfaces } = require('dbus-victron-virtual')
 const dbus = require('dbus-native-victron')
+const debug = require('debug')('victron-virtual');
 
 const properties = {
   temperature: {
@@ -112,7 +113,7 @@ function getIfaceDesc (dev) {
     }
   }
 
-  result.DeviceInstance = { type: 'd' }
+  result.DeviceInstance = { type: 'i' }
   result.CustomName = { type: 's' }
   result.Status = { type: 'i' }
   result.Serial = { type: 's' }
@@ -147,15 +148,22 @@ function getIface (dev) {
 }
 
 module.exports = function (RED) {
+  // Shared state across all instances
+  let hasRunOnce = false;
+  let globalTimeoutHandle = null;
+  const nodeInstances = new Set();
+
   function VictronVirtualNode (config) {
     RED.nodes.createNode(this, config)
     const node = this
+
     const address = process.env.NODE_RED_DBUS_ADDRESS
       ? process.env.NODE_RED_DBUS_ADDRESS.split(':')
       : null
     if (address && address.length === 2) {
       this.address = `tcp:host=${address[0]},port=${address[1]}`
     }
+    let timeoutHandle = null;
 
     // Connnect to the dbus
     if (this.address) {
@@ -199,7 +207,7 @@ module.exports = function (RED) {
       // Return code 0x1 means we successfully had the name
       // Return code 0x3 means it already exists (which should be fine)
       if (retCode === 1 || retCode === 3) {
-        console.log(`Successfully requested service name "${serviceName}" (${retCode})`)
+        debug(`Successfully requested service name "${serviceName}" (${retCode})`)
         proceed(this.bus, config.device, this.id)
       } else {
         /* Other return codes means various errors, check here
@@ -230,8 +238,8 @@ module.exports = function (RED) {
       // Then we need to create the interface implementation (with actual functions)
       const iface = getIface(device)
 
-      // Set the DeviceInstance correctly
-      iface.DeviceInstance = Number(config.deviceinstance) || 0
+      // Initially set the DeviceInstance to 100, this may be updated later if it has already been taken
+      iface.DeviceInstance = 100
       iface.CustomName = config.name || `Virtual ${config.device}`
       iface.Status = 0
       iface.Serial = id || '-'
@@ -268,36 +276,121 @@ module.exports = function (RED) {
       // Then we can add the required Victron interfaces, and receive some funtions to use
       const {
         // emitItemsChanged,
-        addSettings
-        // removeSettings,
+        addSettings,
+        removeSettings,
         // addSystem
         // removeSystem,
-        // getValue,
-        // setValue
+        getValue,
+        setValue
       } = addVictronInterfaces(mybus, ifaceDesc, iface)
 
-      // TODO: Now we need to add the device to com.victronenergy.settings too
+      // Then we need to add the device to com.victronenergy.settings to check the DeviceInstance
+      await addSettings([
+        { path: `/Settings/Devices/virtual_${id}/ClassAndVrmInstance`,
+          default: `${config.device}:${iface.DeviceInstance}`,
+          type: 's'
+        }
+      ])
 
-      // if (config.device === 'relay') {
-      //   const settingsResult = await addSettings([
-      //     { path: '/Settings/Relay/2/InitialState', default: 0, min: 0, max: 1 },
-      //     { path: '/Settings/Relay/2/Function', default: 0, min: 0, max: 3 },
-      //     { path: '/Settings/Relay/2/Polarity', default: 0, min: 0, max: 1 }
-      //   ])
-      // }
+      // Request the actual deviceInstance we got
+      const getValueResult = await getValue({
+        path: `/Settings/Devices/virtual_${id}/ClassAndVrmInstance`,
+        interface: 'com.victronenergy.BusItem',
+        destination: 'com.victronenergy.settings'
+      })
+
+      node.removeSettings = removeSettings;
+
+      let ActualDeviceInstance = Number(getValueResult[1][0].split(':')[1])
+      if (ActualDeviceInstance !== iface.DeviceInstance) {
+        await setValue({
+          path: '/DeviceInstance',
+          value: ActualDeviceInstance,
+          interface: 'com.victronenergy.BusItem',
+          destination: serviceName
+        })
+      }
 
       node.status({
         fill: 'green',
         shape: 'dot',
-        text: `Virtual ${config.device} (${config.deviceinstance})`
+        text: `Virtual ${config.device} (${ActualDeviceInstance})`
       })
+
+      nodeInstances.add(node);
+
+      if (!hasRunOnce && globalTimeoutHandle === null) {
+        globalTimeoutHandle = setTimeout(async function() {
+          debug("Checking for old virtual devices");
+          const getValueResult = await getValue({
+              path: '/Settings/Devices',
+              interface: 'com.victronenergy.BusItem',
+              destination: 'com.victronenergy.settings'
+          });
+          
+          if (getValueResult && getValueResult[1] && Array.isArray(getValueResult[1])) {
+              const deviceEntries = getValueResult[1][0];
+              
+              // Get all virtual devices first
+              const virtualDevices = deviceEntries
+                  .filter(entry => {
+                      const path = entry[0];
+                      return typeof path === 'string' && 
+                             path.includes('virtual_') && 
+                             path.includes('ClassAndVrmInstance');
+                  })
+                  .map(entry => entry[0].split('/')[0]);
+              
+              // Filter out devices that belong to active nodes
+              const activeNodeIds = Array.from(nodeInstances).map(node => node.id);
+              const devicesToRemove = virtualDevices.filter(devicePath => {
+                  return !activeNodeIds.some(nodeId => devicePath.includes(nodeId));
+              });
+              
+              debug("Devices to remove (no active nodes):", devicesToRemove);
+              
+              // Remove settings for each inactive virtual device
+              if (devicesToRemove.length > 0 && removeSettings) {
+                  // Try removing each device individually to better handle errors
+                  for (const device of devicesToRemove) {
+                      const path = `/Settings/Devices/${device}/ClassAndVRMInstance`;
+                      debug("Attempting to remove:", path);
+                      
+                      try {
+                          const result = await removeSettings([{ path: `/Settings/Devices/${device}/ClassAndVrmInstance` }]);
+                          debug("Remove result for", path, ":", result);
+                          
+                      } catch (err) {
+                          console.error("Error removing", path, ":", err);
+                      }
+                  }
+              }
+          }
+          
+          hasRunOnce = true;
+          globalTimeoutHandle = null;
+        }, 10000);
+      }
+
     }
 
     node.on('input', function (msg) {
     })
 
     node.on('close', function (done) {
-      this.bus.connection.end()
+      nodeInstances.delete(node);
+
+      // If this was the last instance and the timeout is still pending
+      if (nodeInstances.size === 0) {
+          if (globalTimeoutHandle) {
+              clearTimeout(globalTimeoutHandle);
+              globalTimeoutHandle = null;
+          }
+          // Only end the connection when closing the last instance
+          this.bus.connection.end()
+          hasRunOnce = false;  // Reset for next deploy
+      }
+
       done()
     })
   }

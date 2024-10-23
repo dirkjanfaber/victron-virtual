@@ -28,9 +28,6 @@
         defaults: {
             name: {value:""},
             device: {value:"", required: true},
-            deviceinstance: {value: 100, required: true, validate: function(value) {
-                return !isNaN(value) && value >= 0 && value <= 255
-            }},
             // grid
             grid_nrofphases: {value: 1, required: false}
         },
@@ -66,10 +63,6 @@
             <p><strong>Note:</strong> Do not use this feature to make an ESS system with third party energy meters. There are multiple <a href="https://www.victronenergy.com/meters-and-sensors/energy-meter" class="blue-link">officially supported meters</a> that can be used in a Victron ESS system. Using other meters has proven too often to lead to issues related with stability.</p>
         </div>
     </div>
-    <div class="form-row">
-        <label for="node-input-deviceinstance"><i class="fa fa-tag"></i> Device Instance (0-255)</label>
-        <input type="text" id="node-input-deviceinstance" placeholder="Device Instance">
-    </div>
     <div class="input-grid">
         <div class="form-row">
             <label for="node-input-grid_nrofphases"><i class="fa fa-location-arrow"></i> Nr of phases</label>
@@ -97,12 +90,14 @@ To get started, pull a virtual device to the canvas and configure it. First the 
 - Meteo
 - Temperature sensor
 
-Each device on the dbus needs to be uniquely identifed. This is done with a device identifcation, that must be unique for the type of device. Choosing a number between 100 and 200 should be a safe choise.
+Depending on the selected device type, you may get a few more fields that need to be filled out. They are described below for each type of device.
 
 Once the device has been deployed and the flow restarted, the device should appear on the dbus. Then you can use a custom output
 node to write values to the device. And of course use the regular nodes to read from the device.
 
-Below you can find some device specific tips and tricks.
+Note that the _deviceInstance_, which uniquely defines a device on the dbus will be generated automatically. The node status will show the
+obtained deviceInstance in brackets. The label of the node will be set as _CustomName_ for the device, making it all easier to identify
+the virtual device.
 
 ### Grid meter
 
