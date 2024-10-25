@@ -268,6 +268,25 @@ module.exports = function (RED) {
           }
         }
           break
+        case 'temperature': {
+          // Remove optional properties if not enabled
+          if (!config.include_humidity) {
+            delete ifaceDesc.properties.Humidity
+            delete iface.Humidity
+          }
+          if (!config.include_pressure) {
+            delete ifaceDesc.properties.Pressure
+            delete iface.Pressure
+          }
+          if (!config.include_battery) {
+            delete ifaceDesc.properties.BatteryVoltage
+            delete iface.BatteryVoltage
+          } else {
+            // Set battery voltage if enabled
+            iface.BatteryVoltage = Number(config.battery_voltage) || 3.3
+          }
+        }
+          break
       }
 
       // Now we need to actually export our interface on our object
