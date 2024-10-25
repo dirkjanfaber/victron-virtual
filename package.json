@@ -18,6 +18,6 @@
   "author": "Dirk-Jan Faber",
   "license": "MIT",
   "dependencies": {
-    "dbus-victron-virtual": "^0.1.1"
+    "dbus-victron-virtual": "^0.1.2"
   }
 }
