@@ -69,7 +69,6 @@ const properties = {
     'Alarms/Low/Restore': { type: 'd' },
     'Alarms/Low/State': { type: 'd' },
     Capacity: { type: 'd' },
-    FilterLength: { type: 'd' },
     FluidType: {
       type: 'i',
       format: (v) => ({
@@ -94,7 +93,9 @@ const properties = {
     RawValueEmpty: { type: 'd' },
     RawValueFull: { type: 'd' },
     Remaining: { type: 'd' },
-    Shape: { type: 's' }
+    Shape: { type: 's' },
+    Temperature: { type: 'd', format: (v) => v != null ? v.toFixed(1) + 'C' : '' },
+    BatteryVoltage: { type: 'd', value: 3.3, format: (v) => v != null ? v.toFixed(2) + 'V' : '' }
   }
 }
 
@@ -244,10 +245,12 @@ module.exports = function (RED) {
       iface.Status = 0
       iface.Serial = id || '-'
 
+      let text = `Virtual ${config.device}`
+
       // Device specific configuration
       switch (config.device) {
         case 'grid': {
-          iface.NrOfPhases = Number(config.grid_nrofphases) || 1
+          iface.NrOfPhases = Number(config.grid_nrofphases ?? 1)
           const properties = [
             { name: 'Current', unit: 'A' },
             { name: 'Power', unit: 'W' },
@@ -266,9 +269,34 @@ module.exports = function (RED) {
               iface[key] = 0
             })
           }
+          text = `Virtual ${iface.NrOfPhases}-phase grid meter`
         }
           break
+        case 'tank': {
+            iface.FluidType = Number(config.fluid_type ?? 1) // Fresh water
+            if (!config.include_tank_battery) {
+              delete ifaceDesc.properties.BatteryVoltage
+              delete iface.BatteryVoltage
+            } else {
+              iface.BatteryVoltage = Number(config.tank_battery_voltage) || 3.3
+            }
+            if (!config.include_tank_temperature) {
+              delete ifaceDesc.properties.Temperature
+              delete iface.Temperature
+            }
+            if (config.tank_capacity !== '' && config.tank_capacity !== undefined) {
+              const capacity = Number(config.tank_capacity)
+              if (isNaN(capacity) || capacity <= 0) {
+                node.error("Tank capacity must be greater than 0")
+                return
+              }
+              iface.Capacity = capacity
+            }
+            text = `Virtual ${properties.tank.FluidType.format(iface.FluidType).toLowerCase()} tank sensor`
+        }
+        break
         case 'temperature': {
+          iface.TemperatureType = Number(config.temperature_type ?? 2) // Generic
           // Remove optional properties if not enabled
           if (!config.include_humidity) {
             delete ifaceDesc.properties.Humidity
@@ -278,13 +306,13 @@ module.exports = function (RED) {
             delete ifaceDesc.properties.Pressure
             delete iface.Pressure
           }
-          if (!config.include_battery) {
+          if (!config.include_temp_battery) {
             delete ifaceDesc.properties.BatteryVoltage
             delete iface.BatteryVoltage
           } else {
-            // Set battery voltage if enabled
-            iface.BatteryVoltage = Number(config.battery_voltage) || 3.3
+            iface.BatteryVoltage = Number(config.temp_battery_voltage) || 3.3
           }
+          text = `Virtual ${properties.temperature.TemperatureType.format(iface.TemperatureType).toLowerCase()} temperature sensor`
         }
           break
       }
@@ -294,7 +322,7 @@ module.exports = function (RED) {
 
       // Then we can add the required Victron interfaces, and receive some funtions to use
       const {
-        // emitItemsChanged,
+        emitItemsChanged,
         addSettings,
         removeSettings,
         // addSystem
@@ -323,18 +351,19 @@ module.exports = function (RED) {
 
       const ActualDeviceInstance = Number(getValueResult[1][0].split(':')[1])
       if (ActualDeviceInstance !== iface.DeviceInstance) {
-        await setValue({
+        setValue({
           path: '/DeviceInstance',
           value: ActualDeviceInstance,
           interface: 'com.victronenergy.BusItem',
           destination: serviceName
         })
+        emitItemsChanged()
       }
 
       node.status({
         fill: 'green',
         shape: 'dot',
-        text: `Virtual ${config.device} (${ActualDeviceInstance})`
+        text: `${text} (${ActualDeviceInstance})`
       })
 
       nodeInstances.add(node)
