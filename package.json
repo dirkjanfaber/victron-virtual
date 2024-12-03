@@ -9,6 +9,11 @@
     "victron",
     "virtual"
   ],
+  {
+  "engines": {
+    "node": ">=18.0.0"
+    }
+  },
   "node-red": {
     "nodes": {
       "victron-virtual": "./src/nodes/victron-virtual.js"
